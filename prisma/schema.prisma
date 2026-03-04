@@ -1,0 +1,54 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PAID
+}
+
+model Invoice {
+  id            String          @id @default(uuid()) // [cite: 20]
+  invoiceNumber String          @unique              // [cite: 21]
+  customerName  String                               // [cite: 22]
+  issueDate     DateTime                             // [cite: 23]
+  dueDate       DateTime                             // [cite: 24]
+  status        InvoiceStatus   @default(DRAFT)      // 
+  total         Float           @default(0)          // [cite: 27]
+  amountPaid    Float           @default(0)          // [cite: 28]
+  balanceDue    Float           @default(0)          // [cite: 29]
+  isArchived    Boolean         @default(false)      // 
+
+  // Relations
+  lineItems     InvoiceLine[]
+  payments      Payment[]
+}
+
+model InvoiceLine {
+  id          String   @id @default(uuid())                                  // [cite: 32]
+  invoiceId   String                                                         // [cite: 33]
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade) 
+  description String                                                         // [cite: 34]
+  quantity    Int                                                            // [cite: 35]
+  unitPrice   Float                                                          // [cite: 36]
+  lineTotal   Float                                                          // [cite: 37]
+
+  @@index([invoiceId])
+}
+
+model Payment {
+  id          String   @id @default(uuid())                                  // [cite: 41]
+  invoiceId   String                                                         // [cite: 42]
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount      Float                                                          // [cite: 43]
+  paymentDate DateTime @default(now())                                       // [cite: 44]
+
+  @@index([invoiceId])
+}
